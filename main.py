@@ -11,6 +11,12 @@ dp = Dispatcher()
 async def start(message: Message):
     await message.answer('Привет! Я помогу тебе узнать тебе погоду в любом городе.')
 
+@dp.message(Command='help')
+async def help(message):
+    await message.answer('Доступные команды: \n /start - приветствие \n /help - перечень команд \n '
+                         '/city - ввести город, чтобы узнать погоду')
+
+
 
 
 
