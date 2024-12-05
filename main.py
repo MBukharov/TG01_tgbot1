@@ -9,11 +9,19 @@ import logging
 import aiohttp
 from aiogram.enums import ParseMode
 
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.storage.memory import MemoryStorage
+
 bot = Bot(token=TOKEN_TG)
-dp = Dispatcher()
+storage = MemoryStorage()
+dp = Dispatcher(storage=storage)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
+
+class WeatherStates(StatesGroup):
+    waiting_for_city = State()
 
 @dp.message(CommandStart())
 async def start(message: Message):
@@ -26,11 +34,12 @@ async def help(message):
 
 
 @dp.message(Command('city'))
-async def cmd_city(message: Message):
+async def cmd_city(message: Message, state: FSMContext):
     await message.reply("Пожалуйста, введите название города:")
+    await state.set_state(WeatherStates.waiting_for_city)
 
-@dp.message(lambda message: message.text)
-async def get_weather(message: Message):
+@dp.message(WeatherStates.waiting_for_city)
+async def get_weather(message: Message, state: FSMContext):
     city_name = message.text.strip()
     weather_data = await fetch_weather(city_name)
 
@@ -46,6 +55,7 @@ async def get_weather(message: Message):
         response = "Не удалось получить данные о погоде. Пожалуйста, проверьте название города."
 
     await message.reply(response, parse_mode=ParseMode.HTML)
+    await state.clear()
 
 async def fetch_weather(city_name: str):
     base_url = "http://api.openweathermap.org/data/2.5/weather"
