@@ -1,7 +1,7 @@
 import asyncio
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart, Command
-from aiogram.types import Message
+from aiogram.types import Message, FSInputFile
 from config import TOKEN_TG, TOKEN_weather
 import requests
 
@@ -12,6 +12,9 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
+
+from gtts import gTTS   #озвучка текста
+import os
 
 bot = Bot(token=TOKEN_TG)
 storage = MemoryStorage()
@@ -25,7 +28,7 @@ class WeatherStates(StatesGroup):
 
 @dp.message(CommandStart())
 async def start(message: Message):
-    await message.answer('Привет! Я помогу тебе узнать тебе погоду в любом городе.')
+    await message.answer(f'Привет, {message.from_user.first_name}! Я помогу тебе узнать погоду в любом городе.')
 
 @dp.message(Command('help'))
 async def help(message):
@@ -48,13 +51,21 @@ async def get_weather(message: Message, state: FSMContext):
         temperature = weather_data['main']['temp']
         response = (
             f"Погода в городе {city_name}:\n"
-            f"Описание: {weather_description}\n"
-            f"Температура: {temperature}°C"
+            f"{weather_description}\n"
+            f"Температура: {int(temperature)}°C"
         )
     else:
         response = "Не удалось получить данные о погоде. Пожалуйста, проверьте название города."
 
     await message.reply(response, parse_mode=ParseMode.HTML)
+
+    #Озвучка сообщения
+    voice = gTTS(text=response, lang='ru')
+    voice.save('tmp/voice.ogg')
+    audio = FSInputFile('tmp/voice.ogg')
+    await bot.send_voice(message.chat.id, audio)
+    os.remove('tmp/voice.ogg')
+
     picture = { 'ясно': 'https://vecherka74.ru/uploads/posts/2017-03/medium/1489747844_sun.jpg',
                 'дождь': 'https://sp-lyamina.ru/media/project_mo_116/f9/b5/f7/77/0e/17/dozhd.jpg',
                 'небольшой дождь':'https://sp-lyamina.ru/media/project_mo_116/f9/b5/f7/77/0e/17/dozhd.jpg',
@@ -86,11 +97,26 @@ async def fetch_weather(city_name: str):
                 logging.error(f"Error fetching weather data: {response.status}")
                 return None
 
-# def get_weather(city_name):
-#     url = f"http://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={TOKEN_weather}"
-#     response = requests.get(url)
-#     data = response.json()
-#     return data
+@dp.message(F.photo)
+async def photo(message: Message):
+    await message.reply("Норм фотка. Давай, я ее сохраню.")
+    await bot.download(message.photo[-1], f'tmp/{message.photo[-1].file_id}.jpg')
+
+
+@dp.message(Command('photo', prefix='&'))
+async def photo(message: Message):
+    await message.reply("Если хочешь отправить мне фотку, отправь ее в чат.")
+
+@dp.message(Command('video'))
+async def video(message: Message):
+    await bot.send_chat_action(message.chat.id, 'upload_video')
+    video = FSInputFile('tmp/video.mp4')
+    await bot.send_video(message.chat.id, video)
+
+
+@dp.message()
+async def unknown(message: Message):
+    await message.answer("Если Вы хотите узнать погоду, выберите команду /city")
 
 
 
