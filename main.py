@@ -55,6 +55,18 @@ async def get_weather(message: Message, state: FSMContext):
         response = "Не удалось получить данные о погоде. Пожалуйста, проверьте название города."
 
     await message.reply(response, parse_mode=ParseMode.HTML)
+    picture = { 'ясно': 'https://vecherka74.ru/uploads/posts/2017-03/medium/1489747844_sun.jpg',
+                'дождь': 'https://sp-lyamina.ru/media/project_mo_116/f9/b5/f7/77/0e/17/dozhd.jpg',
+                'небольшой дождь':'https://sp-lyamina.ru/media/project_mo_116/f9/b5/f7/77/0e/17/dozhd.jpg',
+                'пасмурно': 'https://thumbs.dreamstime.com/b/%D0%BD%D0%B5%D0%B1%D0%BE-%D1%81%D0%BE%D0%BB%D0%BD%D0%B5%D1%87%D0%BD%D0%BE-%D0%B8-%D0%BF%D0%B0%D1%81%D0%BC%D1%83%D1%80%D0%BD%D0%BE-%D1%81%D0%BE%D0%BB%D0%BD%D0%B5%D1%87%D0%BD%D1%8B%D0%B5-%D0%BF%D0%B0%D1%81%D0%BC%D1%83%D1%80%D0%BD%D1%8B%D0%B5-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F-%D0%B4%D0%BB%D1%8F-181133795.jpg',
+                'облачно с прояснениями':'https://cher.all-rf.com/static/news/i/cbd5155d-c921-4880-9344-8d553eeec38b.jpg',
+                'переменная облачность': 'https://s0.rbk.ru/v6_top_pics/media/img/7/01/756342821324017.jpg',
+                'небольшая облачность': 'https://s0.rbk.ru/v6_top_pics/media/img/7/01/756342821324017.jpg',
+                'небольшой снегопад':'https://s0.bloknot-morozovsk.ru/thumb/850x0xcut/upload/iblock/81b/ct454393hrhknfs5nn9fcwe7tphh3yrg/1920x1200_1540698_www.ArtFile.ru_.jpg',
+                'небольшой снег':'https://s0.bloknot-morozovsk.ru/thumb/850x0xcut/upload/iblock/81b/ct454393hrhknfs5nn9fcwe7tphh3yrg/1920x1200_1540698_www.ArtFile.ru_.jpg',}
+    if weather_description in picture:
+        url = picture[weather_description]
+        await bot.send_photo(message.chat.id, url)
     await state.clear()
 
 async def fetch_weather(city_name: str):
