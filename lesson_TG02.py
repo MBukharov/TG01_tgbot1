@@ -3,8 +3,7 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, FSInputFile
 
-from config import TOKEN_TG, TOKEN_weather
-import requests
+from config import TOKEN_TG
 from gtts import gTTS
 from googletrans import Translator
 import os
